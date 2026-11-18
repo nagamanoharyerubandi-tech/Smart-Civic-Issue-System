@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="dashboard-wrapper">
+    <!-- Sidebar Overlay for Mobile -->
+    <div id="sidebar-overlay" class="d-none position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50" style="z-index: 1015;"></div>
+
+    <!-- Admin Sidebar Navigation -->
+    <aside class="dashboard-sidebar" style="background-color: #0b1329;">
+        <div class="sidebar-header" style="background: rgba(0,0,0,0.2);">
+            <i class="bi bi-shield-lock-fill text-warning fs-3"></i>
+            <div>
+                <div class="sidebar-brand-title">ADMIN CONTROL</div>
+                <div class="sidebar-brand-subtitle text-warning">Municipal Operations</div>
+            </div>
+        </div>
+
+        <ul class="sidebar-nav">
+            <li class="sidebar-nav-heading">Operational Control</li>
+            <li class="sidebar-nav-item">
+                <a href="{% url 'admin_dashboard' %}" class="sidebar-nav-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
+                    <i class="bi bi-grid-1x2-fill"></i>
+                    <span>Admin Dashboard</span>
+                </a>
+            </li>
+            <li class="sidebar-nav-item">
+                <a href="{% url 'admin_complaint_list' %}" class="sidebar-nav-link {% if request.resolver_match.url_name in 'admin_complaint_list,admin_complaint_detail' and not request.GET.duplicate %}active{% endif %}">
+                    <i class="bi bi-inbox-fill"></i>
+                    <span>Manage Complaints</span>
+                </a>
+            </li>
+            <li class="sidebar-nav-item">
+                <a href="{% url 'admin_complaint_list' %}?duplicate=yes" class="sidebar-nav-link {% if request.GET.duplicate == 'yes' %}active{% endif %}">
+                    <i class="bi bi-copy text-danger"></i>
+                    <span>Duplicate Alerts</span>
+                </a>
+            </li>
+
+            <li class="sidebar-nav-heading">Master Records</li>
+            <li class="sidebar-nav-item">
+                <a href="{% url 'admin_citizen_list' %}" class="sidebar-nav-link {% if request.resolver_match.url_name == 'admin_citizen_list' %}active{% endif %}">
+                    <i class="bi bi-people-fill"></i>
+                    <span>Registered Citizens</span>
+                </a>
+            </li>
+            <li class="sidebar-nav-item">
+                <a href="{% url 'admin_category_list' %}" class="sidebar-nav-link {% if request.resolver_match.url_name in 'admin_category_list,admin_category_create,admin_category_edit' %}active{% endif %}">
+                    <i class="bi bi-tags-fill"></i>
+                    <span>Issue Categories</span>
+                </a>
+            </li>
+            <li class="sidebar-nav-item">
+                <a href="{% url 'admin_department_list' %}" class="sidebar-nav-link {% if request.resolver_match.url_name in 'admin_department_list,admin_department_create,admin_department_edit' %}active{% endif %}">
+                    <i class="bi bi-building-fill"></i>
+                    <span>Departments</span>
+                </a>
+            </li>
+
+            <li class="sidebar-nav-heading">Analytics & Quality</li>
+            <li class="sidebar-nav-item">
+                <a href="{% url 'admin_analytics' %}" class="sidebar-nav-link {% if request.resolver_match.url_name == 'admin_analytics' %}active{% endif %}">
+                    <i class="bi bi-graph-up-arrow"></i>
+                    <span>Complaint Analytics</span>
+                </a>
+            </li>
+            <li class="sidebar-nav-item">
+                <a href="{% url 'admin_feedback_list' %}" class="sidebar-nav-link {% if request.resolver_match.url_name == 'admin_feedback_list' %}active{% endif %}">
+                    <i class="bi bi-star-fill text-warning"></i>
+                    <span>Feedback & Ratings</span>
+                </a>
+            </li>
+            <li class="sidebar-nav-item">
+                <a href="{% url 'admin_notifications' %}" class="sidebar-nav-link {% if request.resolver_match.url_name == 'admin_notifications' %}active{% endif %}">
+                    <i class="bi bi-bell-fill"></i>
+                    <span>System Alerts</span>
+                    {% if unread_notifications_count > 0 %}
+                        <span class="badge bg-danger badge-counter">{{ unread_notifications_count }}</span>
+                    {% endif %}
+                </a>
+            </li>
+
+            <li class="sidebar-nav-heading">Administrator</li>
+            <li class="sidebar-nav-item">
+                <a href="{% url 'profile' %}" class="sidebar-nav-link {% if request.resolver_match.url_name in 'profile,change_password' %}active{% endif %}">
+                    <i class="bi bi-person-gear"></i>
+                    <span>Admin Profile</span>
+                </a>
+            </li>
+            <li class="sidebar-nav-item">
+                <a href="{% url 'logout' %}" class="sidebar-nav-link text-danger">
+                    <i class="bi bi-box-arrow-right text-danger"></i>
+                    <span>Log Out</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="sidebar-footer">
+            <div class="d-flex align-items-center gap-2">
+                <div class="rounded-circle bg-warning text-dark d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; font-weight: 800;">
+                    A
+                </div>
+                <div class="overflow-hidden">
+                    <div class="small fw-bold text-white text-truncate">{{ user.get_full_name|default:user.username }}</div>
+                    <div class="text-warning small" style="font-size: 0.72rem;">Super Administrator</div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Admin Dashboard Main Container -->
+    <div class="dashboard-main">
+        <header class="dashboard-topbar">
+            <div class="d-flex align-items-center gap-3">
+                <button class="btn btn-sm btn-outline-secondary d-lg-none" id="sidebar-toggle" type="button">
+                    <i class="bi bi-list fs-5"></i>
+                </button>
+                <div>
+                    <h5 class="mb-0 fw-bold">{% block page_title %}Administrative Dashboard{% endblock %}</h5>
+                    <small class="text-muted">{% block page_subtitle %}Central command for municipal issue triage, assignment & tracking{% endblock %}</small>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center gap-2">
+                <a href="{% url 'admin_complaint_list' %}" class="btn btn-sm btn-outline-primary d-none d-sm-inline-flex align-items-center gap-1">
+                    <i class="bi bi-card-checklist"></i> View All Complaints
+                </a>
+                <a href="{% url 'admin_category_create' %}" class="btn btn-sm btn-teal d-none d-md-inline-flex align-items-center gap-1">
+                    <i class="bi bi-plus-lg"></i> New Category
+                </a>
+            </div>
+        </header>
+
+        <section class="dashboard-content">
+            {% block admin_content %}{% endblock %}
+        </section>
+    </div>
+</div>
+{% endblock %}

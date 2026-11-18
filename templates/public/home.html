@@ -1,0 +1,280 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Smart Civic Issue Reporting & Resolution Management System{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-banner">
+    <div class="container position-relative" style="z-index: 2;">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-7">
+                <div class="hero-badge">
+                    <i class="bi bi-patch-check-fill"></i> Government Municipal Initiative
+                </div>
+                <h1 class="display-4 fw-extrabold text-white mb-3 lh-sm">
+                    SMART CIVIC ISSUE REPORTING &amp; RESOLUTION SYSTEM
+                </h1>
+                <p class="fs-5 text-white-50 mb-4">
+                    <strong>Report Problems. Track Progress. Build Better Communities.</strong><br>
+                    Empowering residents to report municipal infrastructure defects with photos and location, while enabling civic administrators to track, dispatch, and resolve problems with complete transparency.
+                </p>
+
+                <!-- Quick Tracking Bar on Hero -->
+                <div class="card p-2 shadow-lg border-0 bg-white rounded-pill mb-4" style="max-width: 580px;">
+                    <form action="{% url 'public_track' %}" method="get" class="d-flex align-items-center gap-2">
+                        <i class="bi bi-search text-muted ms-3 fs-5"></i>
+                        <input type="text" name="ref" class="form-control border-0 shadow-none ps-1 text-dark" placeholder="Enter Complaint Reference ID (e.g. CIV-202611-AB12)..." required>
+                        <button type="submit" class="btn btn-teal rounded-pill px-4 py-2 fw-bold text-nowrap">
+                            Track Status
+                        </button>
+                    </form>
+                </div>
+
+                <div class="d-flex flex-wrap gap-3">
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'citizen_complaint_create' %}" class="btn btn-teal btn-lg rounded-pill px-4 shadow">
+                            <i class="bi bi-camera me-2"></i> Report An Issue Now
+                        </a>
+                        <a href="{% url 'dashboard_redirect' %}" class="btn btn-outline-light btn-lg rounded-pill px-4">
+                            <i class="bi bi-speedometer2 me-2"></i> Open Dashboard
+                        </a>
+                    {% else %}
+                        <a href="{% url 'register' %}" class="btn btn-teal btn-lg rounded-pill px-4 shadow">
+                            <i class="bi bi-person-plus me-2"></i> Register As Citizen
+                        </a>
+                        <a href="{% url 'login' %}" class="btn btn-outline-light btn-lg rounded-pill px-4">
+                            <i class="bi bi-box-arrow-in-right me-2"></i> Sign In Portal
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Hero Illustration / Quick Feature Card -->
+            <div class="col-lg-5">
+                <div class="civic-card p-4 bg-navy border-light border-opacity-10 text-white shadow-lg">
+                    <div class="d-flex align-items-center justify-content-between mb-4 pb-3 border-bottom border-secondary border-opacity-25">
+                        <span class="badge bg-teal px-3 py-2">Civic Impact Counter</span>
+                        <span class="text-white-50 small"><i class="bi bi-clock-history me-1"></i> Live Data</span>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="p-3 rounded bg-white bg-opacity-10">
+                                <div class="text-teal fs-3 fw-bold">{{ total_complaints }}</div>
+                                <div class="small text-white-50 text-uppercase fw-semibold" style="font-size: 0.75rem;">Total Reports</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 rounded bg-white bg-opacity-10">
+                                <div class="text-success fs-3 fw-bold">{{ resolved_complaints }}</div>
+                                <div class="small text-white-50 text-uppercase fw-semibold" style="font-size: 0.75rem;">Resolved Issues</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 rounded bg-white bg-opacity-10">
+                                <div class="text-warning fs-3 fw-bold">{{ resolution_rate }}%</div>
+                                <div class="small text-white-50 text-uppercase fw-semibold" style="font-size: 0.75rem;">Resolution Rate</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 rounded bg-white bg-opacity-10">
+                                <div class="text-info fs-3 fw-bold">{{ avg_rating }} <i class="bi bi-star-fill text-warning fs-6"></i></div>
+                                <div class="small text-white-50 text-uppercase fw-semibold" style="font-size: 0.75rem;">Citizen Rating</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 p-3 rounded bg-black bg-opacity-25 small text-white-75">
+                        <i class="bi bi-info-circle-fill text-teal me-1"></i> Average resolution duration reduced to <strong>48 hours</strong> across all municipal wards.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Issue Categories Section -->
+<section class="py-5">
+    <div class="container py-4">
+        <div class="text-center max-w-700 mx-auto mb-5">
+            <span class="text-teal fw-bold text-uppercase small tracking-wide">Common Civic Concerns</span>
+            <h2 class="fw-bold mt-1">Issues You Can Report Instantly</h2>
+            <p class="text-muted">Select an issue category to submit geotagged photos and descriptions directly to the responsible municipal department.</p>
+        </div>
+
+        <div class="row g-4">
+            {% for cat in categories %}
+                <div class="col-lg-4 col-md-6">
+                    <div class="civic-card h-100 p-4 d-flex flex-column">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center text-white" style="width: 50px; height: 50px; background-color: {{ cat.color }}; font-size: 1.4rem;">
+                                <i class="bi {{ cat.icon }}"></i>
+                            </div>
+                            <div>
+                                <h5 class="mb-0 fw-bold">{{ cat.name }}</h5>
+                                <span class="badge bg-secondary-subtle text-secondary small">{{ cat.complaint_count }} reports logged</span>
+                            </div>
+                        </div>
+                        <p class="text-muted small flex-grow-1">{{ cat.description }}</p>
+                        <div class="mt-3 pt-3 border-top d-flex justify-content-between align-items-center">
+                            <span class="small fw-semibold text-muted">Avg. SLA: 48 Hrs</span>
+                            <a href="{% url 'citizen_complaint_create' %}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                Report This &rarr;
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- 4-Step Resolution Workflow -->
+<section class="py-5 bg-body-tertiary">
+    <div class="container py-4">
+        <div class="text-center max-w-700 mx-auto mb-5">
+            <span class="text-teal fw-bold text-uppercase small">Accountable Governance</span>
+            <h2 class="fw-bold mt-1">How The Resolution Process Works</h2>
+            <p class="text-muted">A structured, auditable 4-step pipeline that guarantees citizen voices turn into tangible public repairs.</p>
+        </div>
+
+        <div class="row g-4 text-center">
+            <div class="col-md-3">
+                <div class="civic-card p-4 h-100">
+                    <div class="mx-auto rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px; font-size: 1.75rem;">
+                        <i class="bi bi-camera-fill"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">1. Snap &amp; Submit</h5>
+                    <p class="text-muted small">Citizen snaps a photo of the problem, provides location, and gets a unique Reference ID.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="civic-card p-4 h-100">
+                    <div class="mx-auto rounded-circle bg-info bg-opacity-10 text-info d-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px; font-size: 1.75rem;">
+                        <i class="bi bi-funnel-fill"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">2. Triage &amp; Assign</h5>
+                    <p class="text-muted small">Admins review complaints, run duplicate checks, set priority, and assign to specific department heads.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="civic-card p-4 h-100">
+                    <div class="mx-auto rounded-circle bg-warning bg-opacity-10 text-warning d-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px; font-size: 1.75rem;">
+                        <i class="bi bi-tools"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">3. Field Action</h5>
+                    <p class="text-muted small">Department maintenance crews are dispatched with machinery to execute field repairs.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="civic-card p-4 h-100">
+                    <div class="mx-auto rounded-circle bg-success bg-opacity-10 text-success d-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px; font-size: 1.75rem;">
+                        <i class="bi bi-check-circle-fill"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">4. Resolve &amp; Rate</h5>
+                    <p class="text-muted small">Issue is verified resolved with notes. The citizen receives SMS/Email notification and rates the work.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Recent Resolved Success Stories -->
+<section class="py-5">
+    <div class="container py-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+            <div>
+                <span class="text-teal fw-bold text-uppercase small">Proven Impact</span>
+                <h2 class="fw-bold mb-0">Recently Resolved Civic Issues</h2>
+            </div>
+            <a href="{% url 'public_track' %}" class="btn btn-outline-secondary rounded-pill px-4 mt-3 mt-md-0">
+                <i class="bi bi-search me-1"></i> Track Any Issue
+            </a>
+        </div>
+
+        <div class="row g-4">
+            {% for item in recent_resolved %}
+                <div class="col-lg-6">
+                    <div class="civic-card p-4 h-100 border-start border-4 border-success">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="badge bg-success-subtle text-success fw-bold">
+                                <i class="bi bi-check-circle me-1"></i> Resolved
+                            </span>
+                            <small class="text-muted">{{ item.reference_id }}</small>
+                        </div>
+                        <h5 class="fw-bold mb-2">{{ item.title }}</h5>
+                        <p class="text-muted small mb-3">{{ item.description|truncatewords:24 }}</p>
+
+                        <div class="p-3 rounded bg-body-tertiary mb-3 small">
+                            <div class="fw-bold text-teal mb-1"><i class="bi bi-wrench-adjustable me-1"></i> Resolution Action:</div>
+                            <div class="text-secondary">{{ item.resolution_notes|default:"Inspected and rectified by municipal maintenance crew." }}</div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center small text-muted">
+                            <span><i class="bi bi-geo-alt me-1 text-danger"></i> {{ item.area }}</span>
+                            <span><i class="bi bi-building me-1 text-primary"></i> {{ item.assigned_department.code|default:"Municipal PWD" }}</span>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-12 text-center text-muted py-4">No resolved issues yet.</div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Citizen Testimonials from Real Feedback -->
+<section class="py-5 bg-body-tertiary">
+    <div class="container py-4">
+        <div class="text-center max-w-700 mx-auto mb-5">
+            <span class="text-teal fw-bold text-uppercase small">Resident Satisfaction</span>
+            <h2 class="fw-bold mt-1">What Citizens Are Saying</h2>
+            <p class="text-muted">Real reviews submitted by verified community members after municipal resolutions.</p>
+        </div>
+
+        <div class="row g-4">
+            {% for test in testimonials %}
+                <div class="col-md-4">
+                    <div class="civic-card p-4 h-100 d-flex flex-column">
+                        <div class="rating-stars mb-3">
+                            {% for _ in test.stars_range %}★{% endfor %}{% for _ in test.empty_stars_range %}☆{% endfor %}
+                            <span class="text-dark fw-bold small ms-1">({{ test.rating }}/5)</span>
+                        </div>
+                        <p class="text-muted small fst-italic flex-grow-1">"{{ test.comments }}"</p>
+                        <div class="d-flex align-items-center gap-2 pt-3 border-top">
+                            <div class="rounded-circle bg-teal text-white d-flex align-items-center justify-content-center fw-bold" style="width: 38px; height: 38px;">
+                                {{ test.citizen.username|slice:":1"|upper }}
+                            </div>
+                            <div>
+                                <div class="fw-bold small">{{ test.citizen.get_full_name|default:test.citizen.username }}</div>
+                                <div class="text-muted" style="font-size: 0.72rem;">Verified Citizen • {{ test.complaint.reference_id }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-12 text-center text-muted">Citizen feedback will appear here as complaints are resolved.</div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action Banner -->
+<section class="py-5 bg-navy text-white text-center">
+    <div class="container py-4">
+        <h2 class="fw-extrabold text-white mb-3">Notice An Unresolved Issue In Your Ward?</h2>
+        <p class="fs-5 text-white-50 max-w-700 mx-auto mb-4">
+            Join thousands of active residents making our city cleaner, safer, and better every day. Report in under 60 seconds.
+        </p>
+        <div class="d-flex justify-content-center gap-3">
+            <a href="{% url 'citizen_complaint_create' %}" class="btn btn-teal btn-lg rounded-pill px-5 shadow">
+                <i class="bi bi-camera me-2"></i> Report An Issue
+            </a>
+            <a href="{% url 'public_track' %}" class="btn btn-outline-light btn-lg rounded-pill px-4">
+                <i class="bi bi-crosshair me-2"></i> Track Complaint
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}

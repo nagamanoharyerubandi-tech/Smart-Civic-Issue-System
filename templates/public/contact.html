@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Contact & Municipal Helplines - Smart Civic System{% endblock %}
+
+{% block content %}
+<div class="py-5 bg-body-tertiary border-bottom">
+    <div class="container text-center">
+        <span class="badge bg-teal px-3 py-2 text-uppercase mb-2">24/7 Citizen Support</span>
+        <h1 class="display-5 fw-bold mb-3">Contact Us &amp; Emergency Helplines</h1>
+        <p class="fs-5 text-muted max-w-700 mx-auto">
+            Get in touch with municipal authorities or report urgent emergency hazards directly.
+        </p>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row g-5">
+        <!-- Emergency Helplines Cards -->
+        <div class="col-lg-5">
+            <h4 class="fw-bold mb-4">Urgent Civic Hotlines</h4>
+
+            <div class="civic-card p-3 mb-3 border-start border-4 border-primary">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-circle bg-primary bg-opacity-10 text-primary p-3 fs-4">
+                        <i class="bi bi-headset"></i>
+                    </div>
+                    <div>
+                        <div class="text-muted small">Central Citizen Grievance Cell</div>
+                        <h5 class="fw-bold mb-0">1800-11-2244</h5>
+                        <small class="text-success fw-semibold"><i class="bi bi-circle-fill" style="font-size: 8px;"></i> Toll-Free (24x7)</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="civic-card p-3 mb-3 border-start border-4 border-info">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-circle bg-info bg-opacity-10 text-info p-3 fs-4">
+                        <i class="bi bi-droplet-fill"></i>
+                    </div>
+                    <div>
+                        <div class="text-muted small">Water Supply &amp; Mainline Bursts</div>
+                        <h5 class="fw-bold mb-0">1916</h5>
+                        <small class="text-muted">Direct Water Board Dispatch</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="civic-card p-3 mb-3 border-start border-4 border-warning">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-circle bg-warning bg-opacity-10 text-warning p-3 fs-4">
+                        <i class="bi bi-lightning-charge-fill"></i>
+                    </div>
+                    <div>
+                        <div class="text-muted small">Power Failures &amp; Streetlights</div>
+                        <h5 class="fw-bold mb-0">1912</h5>
+                        <small class="text-muted">Electrical Control Room</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="civic-card p-3 mb-3 border-start border-4 border-success">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-circle bg-success bg-opacity-10 text-success p-3 fs-4">
+                        <i class="bi bi-trash3-fill"></i>
+                    </div>
+                    <div>
+                        <div class="text-muted small">Solid Waste &amp; Sanitation Emergency</div>
+                        <h5 class="fw-bold mb-0">+91 11 2345 6702</h5>
+                        <small class="text-muted">Sanitation Rapid Response</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4 bg-navy text-white rounded-3 mt-4">
+                <h6 class="fw-bold text-teal mb-2"><i class="bi bi-geo-alt-fill me-1"></i> Municipal Corporation HQ</h6>
+                <p class="small text-white-70 mb-1">Civil Lines Administrative Complex, Sector 1</p>
+                <p class="small text-white-70 mb-0">Metropolis City - 110001</p>
+            </div>
+        </div>
+
+        <!-- Contact Message Form -->
+        <div class="col-lg-7">
+            <div class="civic-card p-4 p-md-5">
+                <h4 class="fw-bold mb-2">Send an Enquiry or Feedback</h4>
+                <p class="text-muted small mb-4">Have questions about municipal programs, wards, or policy? Drop us a note.</p>
+
+                <form method="post" action="{% url 'contact' %}">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Full Name *</label>
+                            <input type="text" name="name" class="form-control" placeholder="Enter your name" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold small">Email Address *</label>
+                            <input type="email" name="email" class="form-control" placeholder="you@example.com" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold small">Subject *</label>
+                            <input type="text" name="subject" class="form-control" placeholder="Brief subject of inquiry" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-semibold small">Your Message *</label>
+                            <textarea name="message" class="form-control" rows="5" placeholder="Write your message here..." required></textarea>
+                        </div>
+                        <div class="col-12 mt-4">
+                            <button type="submit" class="btn btn-teal rounded-pill px-5 fw-bold">
+                                <i class="bi bi-send-fill me-2"></i> Submit Inquiry
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

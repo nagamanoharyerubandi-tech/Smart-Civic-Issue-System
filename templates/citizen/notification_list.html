@@ -1,0 +1,79 @@
+{% extends 'citizen/base_citizen.html' %}
+{% load static %}
+
+{% block title %}My Notifications - Smart Civic System{% endblock %}
+{% block page_title %}Notifications &amp; Civic Alerts{% endblock %}
+{% block page_subtitle %}Live updates regarding status changes and municipal assignments{% endblock %}
+
+{% block citizen_content %}
+<div class="civic-card p-3 mb-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <div class="d-flex gap-2">
+            <a href="{% url 'citizen_notifications' %}" class="btn btn-sm {% if filter_type != 'unread' %}btn-teal{% else %}btn-outline-secondary{% endif %} rounded-pill">
+                All Notifications
+            </a>
+            <a href="{% url 'citizen_notifications' %}?filter=unread" class="btn btn-sm {% if filter_type == 'unread' %}btn-teal{% else %}btn-outline-secondary{% endif %} rounded-pill">
+                Unread Only ({{ unread_count }})
+            </a>
+        </div>
+        {% if unread_count > 0 %}
+            <a href="{% url 'notification_mark_all_read' %}" class="btn btn-sm btn-outline-secondary rounded-pill">
+                <i class="bi bi-check2-all me-1"></i> Mark All As Read
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="civic-card">
+    <div class="p-0">
+        {% for notif in page_obj %}
+            <div class="notif-item {% if not notif.is_read %}unread{% endif %} p-3 border-bottom d-flex align-items-start gap-3">
+                <div class="rounded-circle bg-body-tertiary p-2 text-center" style="width: 44px; height: 44px; flex-shrink: 0;">
+                    <i class="bi {{ notif.icon_class }} fs-5"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <h6 class="fw-bold mb-0 {% if not notif.is_read %}text-teal{% endif %}">{{ notif.title }}</h6>
+                        <small class="text-muted">{{ notif.created_at|timesince }} ago</small>
+                    </div>
+                    <p class="text-secondary small mb-2">{{ notif.message }}</p>
+                    <div class="d-flex align-items-center gap-2">
+                        {% if notif.action_url %}
+                            <a href="{% url 'notification_mark_read' notif.id %}" class="btn btn-xs btn-outline-primary btn-sm py-0 px-2 small">
+                                View Linked Issue &rarr;
+                            </a>
+                        {% endif %}
+                        {% if not notif.is_read %}
+                            <a href="{% url 'notification_mark_read' notif.id %}" class="text-muted small text-decoration-none">
+                                <i class="bi bi-check"></i> Mark read
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="text-center py-5 text-muted">
+                <i class="bi bi-bell-slash fs-1 d-block mb-2 text-secondary"></i>
+                <h6 class="fw-bold">No notifications to display.</h6>
+                <p class="small">You will be alerted here whenever there are updates to your reported issues.</p>
+            </div>
+        {% endfor %}
+    </div>
+
+    {% if page_obj.has_other_pages %}
+        <div class="p-3 border-top d-flex justify-content-center">
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if filter_type %}&filter={{ filter_type }}{% endif %}">&laquo;</a></li>
+                    {% endif %}
+                    <li class="page-item active"><span class="page-link bg-teal border-teal">{{ page_obj.number }}</span></li>
+                    {% if page_obj.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if filter_type %}&filter={{ filter_type }}{% endif %}">&raquo;</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

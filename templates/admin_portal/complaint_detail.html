@@ -1,0 +1,281 @@
+{% extends 'admin_portal/base_admin.html' %}
+{% load static %}
+
+{% block title %}Manage Complaint {{ complaint.reference_id }} - Smart Civic System{% endblock %}
+{% block page_title %}Complaint Management Inspector{% endblock %}
+{% block page_subtitle %}Ref: {{ complaint.reference_id }} • Submitted by {{ complaint.citizen.get_full_name|default:complaint.citizen.username }}{% endblock %}
+
+{% block admin_content %}
+
+<!-- Potential Duplicate Warning Alert -->
+{% if complaint.is_duplicate or potential_duplicates.exists %}
+    <div class="duplicate-alert-banner mb-4">
+        <div class="rounded-circle bg-danger text-white d-flex align-items-center justify-content-center p-3 fs-3" style="width: 54px; height: 54px; flex-shrink: 0;">
+            <i class="bi bi-copy"></i>
+        </div>
+        <div class="flex-grow-1">
+            <h5 class="fw-bold text-danger mb-1">
+                {% if complaint.is_duplicate %}
+                    Verified Duplicate Issue
+                {% else %}
+                    Potential Duplicate Warning Detected!
+                {% endif %}
+            </h5>
+            <p class="small text-secondary mb-2">
+                {% if complaint.is_duplicate and complaint.duplicate_of %}
+                    This complaint has been consolidated as a duplicate of original complaint
+                    <a href="{% url 'admin_complaint_detail' complaint.duplicate_of.id %}" class="fw-bold text-danger">
+                        #{{ complaint.duplicate_of.reference_id }}
+                    </a>.
+                {% else %}
+                    Our duplicate detection engine detected {{ potential_duplicates.count }} existing active complaint(s) in the same category and ward. Consolidating duplicate complaints avoids duplicate dispatch.
+                {% endif %}
+            </p>
+
+            {% if not complaint.is_duplicate and potential_duplicates.exists %}
+                <div class="p-2 bg-white rounded border mb-3 small">
+                    <strong>Matching Complaint(s):</strong>
+                    <ul class="mb-0 mt-1 ps-3">
+                        {% for match in potential_duplicates %}
+                            <li>
+                                <a href="{% url 'admin_complaint_detail' match.id %}" class="fw-bold text-teal">
+                                    {{ match.reference_id }}
+                                </a>: {{ match.title }} (Status: <span class="badge {{ match.status_badge_class }}">{{ match.status }}</span>) - Reported on {{ match.created_at|date:"M d, Y" }}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <div class="d-flex flex-wrap gap-2">
+                    <form method="post" action="{% url 'admin_verify_duplicate' complaint.id %}" class="d-inline">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="mark_duplicate">
+                        <input type="hidden" name="primary_complaint_id" value="{{ potential_duplicates.first.id }}">
+                        <button type="submit" class="btn btn-sm btn-danger fw-semibold" onclick="return confirm('Consolidate this complaint as a duplicate and notify citizen?');">
+                            <i class="bi bi-link-45deg"></i> Link as Duplicate of #{{ potential_duplicates.first.reference_id }} &amp; Close
+                        </button>
+                    </form>
+
+                    <form method="post" action="{% url 'admin_verify_duplicate' complaint.id %}" class="d-inline">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="dismiss_duplicate">
+                        <button type="submit" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-check2"></i> Dismiss Warning (Distinct Issue)
+                        </button>
+                    </form>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endif %}
+
+<div class="row g-4">
+    <!-- Left Column: Details & Management Controls -->
+    <div class="col-lg-8">
+        <!-- Main Info Card -->
+        <div class="civic-card p-4 mb-4">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 border-bottom pb-3 mb-3">
+                <div>
+                    <span class="badge bg-navy px-3 py-1 fs-6">{{ complaint.reference_id }}</span>
+                    <span class="badge {{ complaint.status_badge_class }} px-3 py-1 fs-6 ms-2">{{ complaint.status }}</span>
+                    <span class="badge {{ complaint.priority_badge_class }} px-3 py-1 fs-6 ms-1">{{ complaint.priority }} Priority</span>
+                </div>
+                <div>
+                    <span class="text-muted small">Lodged on: {{ complaint.created_at|date:"M d, Y h:i A" }}</span>
+                </div>
+            </div>
+
+            <h3 class="fw-bold mb-3">{{ complaint.title }}</h3>
+            <p class="text-secondary leading-relaxed mb-4">{{ complaint.description }}</p>
+
+            <!-- Metadata Table -->
+            <div class="row g-3 small bg-body-tertiary p-3 rounded mb-4">
+                <div class="col-sm-6">
+                    <span class="text-muted d-block">Reporting Citizen:</span>
+                    <strong>{{ complaint.citizen.get_full_name|default:complaint.citizen.username }}</strong>
+                </div>
+                <div class="col-sm-6">
+                    <span class="text-muted d-block">Citizen Phone &amp; Email:</span>
+                    <strong>{{ complaint.citizen.profile.phone_number|default:"N/A" }} • {{ complaint.citizen.email }}</strong>
+                </div>
+                <div class="col-sm-6">
+                    <span class="text-muted d-block">Category:</span>
+                    <strong><i class="bi {{ complaint.category.icon }} text-teal me-1"></i> {{ complaint.category.name }}</strong>
+                </div>
+                <div class="col-sm-6">
+                    <span class="text-muted d-block">Assigned Department:</span>
+                    <strong><i class="bi bi-building text-primary me-1"></i> {{ complaint.assigned_department.name|default:"Not Assigned" }}</strong>
+                </div>
+                <div class="col-12">
+                    <span class="text-muted d-block">Location Details:</span>
+                    <strong>{{ complaint.address }}, {{ complaint.area }}, {{ complaint.city }}</strong>
+                    {% if complaint.landmark %}
+                        <span class="text-muted">(Near: {{ complaint.landmark }})</span>
+                    {% endif %}
+                </div>
+                {% if complaint.latitude and complaint.longitude %}
+                    <div class="col-12">
+                        <span class="text-muted d-block">Coordinates:</span>
+                        <code>Lat: {{ complaint.latitude }}, Lng: {{ complaint.longitude }}</code>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Resolution Notes if any -->
+            {% if complaint.resolution_notes %}
+                <div class="p-4 rounded border {% if complaint.status == 'Resolved' %}border-success bg-success bg-opacity-10{% else %}border-danger bg-danger bg-opacity-10{% endif %} mb-4">
+                    <h6 class="fw-bold {% if complaint.status == 'Resolved' %}text-success{% else %}text-danger{% endif %} mb-2">
+                        <i class="bi bi-info-circle-fill me-1"></i>
+                        {% if complaint.status == 'Resolved' %}Recorded Resolution Notes{% else %}Administrative Remarks{% endif %}
+                    </h6>
+                    <p class="mb-0 small leading-relaxed">{{ complaint.resolution_notes }}</p>
+                </div>
+            {% endif %}
+
+            <!-- Citizen Feedback Review if submitted -->
+            {% if feedback %}
+                <div class="p-4 rounded border bg-warning bg-opacity-10 border-warning mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="fw-bold text-dark mb-0"><i class="bi bi-star-fill text-warning me-1"></i> Citizen Feedback Review</h6>
+                        <span class="badge bg-warning text-dark fw-bold">{{ feedback.rating }} / 5 Stars</span>
+                    </div>
+                    <div class="rating-stars mb-1">
+                        {% for _ in feedback.stars_range %}★{% endfor %}{% for _ in feedback.empty_stars_range %}☆{% endfor %}
+                    </div>
+                    <p class="small text-dark fst-italic mb-1">"{{ feedback.comments }}"</p>
+                    <small class="text-muted">Submitted by {{ feedback.citizen.username }} on {{ feedback.created_at|date:"M d, Y" }}</small>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Administrative Action Forms Tabs/Cards -->
+        <div class="row g-4">
+            <!-- 1. Update Status & Priority -->
+            <div class="col-md-6">
+                <div class="civic-card p-4 h-100">
+                    <h5 class="fw-bold mb-3 border-bottom pb-2">
+                        <i class="bi bi-pencil-square text-teal me-1"></i> Update Status &amp; Priority
+                    </h5>
+                    <form method="post" action="{% url 'admin_complaint_detail' complaint.id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="action_type" value="update_status">
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small">Update Status</label>
+                            {{ status_form.status }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small">Priority Level</label>
+                            {{ status_form.priority }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small">Administrative Remarks / Field Notes *</label>
+                            {{ status_form.remarks }}
+                            <div class="form-text small">Remarks will be logged in the audit trail and sent to the citizen.</div>
+                        </div>
+
+                        <button type="submit" class="btn btn-teal w-100 fw-bold">
+                            <i class="bi bi-check2-circle me-1"></i> Save Status Change
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 2. Assign Department -->
+            <div class="col-md-6">
+                <div class="civic-card p-4 h-100">
+                    <h5 class="fw-bold mb-3 border-bottom pb-2">
+                        <i class="bi bi-building-gear text-primary me-1"></i> Department Dispatch
+                    </h5>
+                    <form method="post" action="{% url 'admin_complaint_detail' complaint.id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="action_type" value="assign_department">
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small">Assigned Department</label>
+                            {{ assign_form.department }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small">Target Completion Date (SLA)</label>
+                            {{ assign_form.target_completion_date }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small">Work Orders / Instructions</label>
+                            {{ assign_form.instructions }}
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 fw-bold">
+                            <i class="bi bi-send-fill me-1"></i> Dispatch To Department
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Photograph & Full Audit History -->
+    <div class="col-lg-4">
+        <!-- Photo Card -->
+        {% if complaint.photograph %}
+            <div class="civic-card p-3 mb-4 text-center">
+                <h6 class="fw-bold mb-2 text-start">Citizen Photograph</h6>
+                <a href="{{ complaint.photograph.url }}" target="_blank">
+                    <img src="{{ complaint.photograph.url }}" class="img-preview-box shadow-sm mb-2" alt="Complaint photo">
+                </a>
+                <small class="text-muted d-block">Click photo to expand full resolution</small>
+            </div>
+        {% else %}
+            <div class="civic-card p-4 mb-4 text-center text-muted">
+                <i class="bi bi-image fs-1 d-block mb-2 text-secondary"></i>
+                <small>No photograph attached by citizen.</small>
+            </div>
+        {% endif %}
+
+        <!-- Department Assignments Log -->
+        {% if assignments %}
+            <div class="civic-card p-3 mb-4">
+                <h6 class="fw-bold mb-2"><i class="bi bi-building me-1 text-primary"></i> Assignment History</h6>
+                {% for asg in assignments %}
+                    <div class="p-2 border rounded bg-body-tertiary mb-2 small">
+                        <div class="fw-bold text-primary">{{ asg.department.name }}</div>
+                        <div class="text-muted" style="font-size: 0.75rem;">Assigned by: {{ asg.assigned_by.username|default:"System" }} • {{ asg.assigned_at|date:"M d, Y" }}</div>
+                        {% if asg.instructions %}
+                            <div class="mt-1 text-secondary">"{{ asg.instructions }}"</div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Audit Trail -->
+        <div class="civic-card p-4">
+            <h6 class="fw-bold mb-3 border-bottom pb-2">
+                <i class="bi bi-clock-history text-teal me-1"></i> Complete Status Audit Trail
+            </h6>
+            <div class="vertical-timeline">
+                {% for hist in status_history %}
+                    <div class="timeline-event">
+                        <div class="timeline-dot {% if hist.status == 'Resolved' %}success{% elif hist.status == 'Rejected' %}danger{% else %}active{% endif %}"></div>
+                        <div class="timeline-content">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="badge bg-secondary-subtle text-dark fw-bold">{{ hist.status }}</span>
+                                <small class="text-muted" style="font-size: 0.72rem;">{{ hist.changed_at|date:"M d, h:i A" }}</small>
+                            </div>
+                            <small class="text-secondary d-block mb-1">
+                                By: <strong>{{ hist.changed_by.get_full_name|default:hist.changed_by.username|default:"System" }}</strong>
+                            </small>
+                            <p class="mb-0 small text-muted">{{ hist.remarks|default:"Record updated." }}</p>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="small text-muted">No history recorded yet.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

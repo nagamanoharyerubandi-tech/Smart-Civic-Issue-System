@@ -1,0 +1,160 @@
+{% extends 'citizen/base_citizen.html' %}
+{% load static %}
+
+{% block title %}Complaint {{ complaint.reference_id }} - Smart Civic System{% endblock %}
+{% block page_title %}Complaint Details &amp; Progress{% endblock %}
+{% block page_subtitle %}Ref: {{ complaint.reference_id }} • Lodged on {{ complaint.created_at|date:"M d, Y" }}{% endblock %}
+
+{% block citizen_content %}
+<div class="row g-4">
+    <!-- Left Column: Complaint Data & Stepper -->
+    <div class="col-lg-8">
+        <!-- Main Details Card -->
+        <div class="civic-card p-4 mb-4">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 border-bottom pb-3 mb-3">
+                <div>
+                    <span class="badge bg-navy px-3 py-1 fs-6">{{ complaint.reference_id }}</span>
+                    <span class="badge {{ complaint.status_badge_class }} px-3 py-1 fs-6 ms-2">{{ complaint.status }}</span>
+                    <span class="badge {{ complaint.priority_badge_class }} px-3 py-1 fs-6 ms-1">{{ complaint.priority }} Priority</span>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'citizen_complaint_track' complaint.id %}" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-crosshair me-1"></i> Visual Timeline
+                    </a>
+                    {% if complaint.is_cancellable %}
+                        <a href="{% url 'citizen_complaint_cancel' complaint.id %}" class="btn btn-sm btn-outline-danger">
+                            <i class="bi bi-x-circle me-1"></i> Cancel Issue
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <h3 class="fw-bold mb-3">{{ complaint.title }}</h3>
+            <p class="text-secondary leading-relaxed mb-4">{{ complaint.description }}</p>
+
+            <!-- Stepper Progress Widget -->
+            <div class="p-3 bg-body-tertiary rounded mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="fw-bold small text-uppercase text-muted">Resolution Progress</span>
+                    <span class="fw-bold text-teal small">{{ complaint.progress_percentage }}% Complete</span>
+                </div>
+                <div class="progress" style="height: 10px;">
+                    <div class="progress-bar bg-teal" role="progressbar" style="width: {{ complaint.progress_percentage }}%;"></div>
+                </div>
+            </div>
+
+            <!-- Location & Category Information -->
+            <h6 class="fw-bold text-teal text-uppercase small mb-3">Location &amp; Civic Metadata</h6>
+            <div class="row g-3 small bg-body-tertiary p-3 rounded mb-4">
+                <div class="col-sm-6">
+                    <span class="text-muted d-block">Category:</span>
+                    <strong><i class="bi {{ complaint.category.icon }} text-teal me-1"></i> {{ complaint.category.name }}</strong>
+                </div>
+                <div class="col-sm-6">
+                    <span class="text-muted d-block">Ward / Area:</span>
+                    <strong><i class="bi bi-geo-alt text-danger me-1"></i> {{ complaint.area }}</strong>
+                </div>
+                <div class="col-sm-6">
+                    <span class="text-muted d-block">City:</span>
+                    <strong>{{ complaint.city }}</strong>
+                </div>
+                <div class="col-sm-6">
+                    <span class="text-muted d-block">Assigned Department:</span>
+                    <strong><i class="bi bi-building text-primary me-1"></i> {{ complaint.assigned_department.name|default:"Awaiting Assignment" }}</strong>
+                </div>
+                <div class="col-12">
+                    <span class="text-muted d-block">Full Street Address:</span>
+                    <strong>{{ complaint.address }}</strong>
+                </div>
+                {% if complaint.landmark %}
+                    <div class="col-12">
+                        <span class="text-muted d-block">Landmark:</span>
+                        <strong>{{ complaint.landmark }}</strong>
+                    </div>
+                {% endif %}
+                {% if complaint.latitude and complaint.longitude %}
+                    <div class="col-12">
+                        <span class="text-muted d-block">GPS Coordinates:</span>
+                        <code>Lat: {{ complaint.latitude }}, Long: {{ complaint.longitude }}</code>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Resolution Notes if any -->
+            {% if complaint.resolution_notes %}
+                <div class="p-4 rounded border {% if complaint.status == 'Resolved' %}border-success bg-success bg-opacity-10{% else %}border-danger bg-danger bg-opacity-10{% endif %} mb-4">
+                    <h6 class="fw-bold {% if complaint.status == 'Resolved' %}text-success{% else %}text-danger{% endif %} mb-2">
+                        <i class="bi bi-info-circle-fill me-1"></i>
+                        {% if complaint.status == 'Resolved' %}Official Resolution Notes{% else %}Administrative Remarks{% endif %}
+                    </h6>
+                    <p class="mb-0 small leading-relaxed">{{ complaint.resolution_notes }}</p>
+                    {% if complaint.resolved_at %}
+                        <small class="text-muted d-block mt-2">Resolved on: {{ complaint.resolved_at|date:"M d, Y h:i A" }}</small>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            <!-- Feedback Card -->
+            {% if complaint.status == 'Resolved' %}
+                <div class="p-4 rounded border bg-warning bg-opacity-10 border-warning">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="fw-bold text-dark mb-0"><i class="bi bi-star-fill text-warning me-1"></i> Citizen Resolution Feedback</h6>
+                        {% if not feedback %}
+                            <a href="{% url 'citizen_submit_feedback' complaint.id %}" class="btn btn-sm btn-warning text-dark fw-bold rounded-pill px-3">
+                                Rate This Resolution &rarr;
+                            </a>
+                        {% endif %}
+                    </div>
+                    {% if feedback %}
+                        <div class="rating-stars mb-1">
+                            {% for _ in feedback.stars_range %}★{% endfor %}{% for _ in feedback.empty_stars_range %}☆{% endfor %}
+                            <span class="text-dark fw-bold small ms-1">({{ feedback.rating }}/5 Stars)</span>
+                        </div>
+                        <p class="mb-1 small text-dark fst-italic">"{{ feedback.comments }}"</p>
+                        <small class="text-muted">Submitted on {{ feedback.created_at|date:"M d, Y" }}</small>
+                    {% else %}
+                        <p class="small text-muted mb-0">Help municipal leadership improve response quality by rating how well this issue was addressed.</p>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Right Column: Photograph & Audit History -->
+    <div class="col-lg-4">
+        <!-- Photo Card -->
+        {% if complaint.photograph %}
+            <div class="civic-card p-3 mb-4 text-center">
+                <h6 class="fw-bold mb-2 text-start">Uploaded Photo</h6>
+                <a href="{{ complaint.photograph.url }}" target="_blank">
+                    <img src="{{ complaint.photograph.url }}" class="img-preview-box shadow-sm mb-2" alt="Complaint Photograph">
+                </a>
+                <small class="text-muted d-block">Click photo to view full size</small>
+            </div>
+        {% endif %}
+
+        <!-- Status Audit History Trail -->
+        <div class="civic-card p-4">
+            <h6 class="fw-bold mb-3 border-bottom pb-2">
+                <i class="bi bi-clock-history text-teal me-1"></i> Audit Trail History
+            </h6>
+            <div class="vertical-timeline">
+                {% for hist in status_history %}
+                    <div class="timeline-event">
+                        <div class="timeline-dot {% if hist.status == 'Resolved' %}success{% elif hist.status == 'Rejected' %}danger{% else %}active{% endif %}"></div>
+                        <div class="timeline-content">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="badge bg-secondary-subtle text-dark fw-bold">{{ hist.status }}</span>
+                                <small class="text-muted" style="font-size: 0.7rem;">{{ hist.changed_at|date:"M d, h:i A" }}</small>
+                            </div>
+                            <p class="mb-0 small text-muted">{{ hist.remarks|default:"Status updated in records." }}</p>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="small text-muted">No history logged yet.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

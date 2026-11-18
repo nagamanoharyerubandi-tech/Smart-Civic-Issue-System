@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}About Us - Smart Civic Issue Reporting & Resolution System{% endblock %}
+
+{% block content %}
+<div class="py-5 bg-body-tertiary border-bottom">
+    <div class="container text-center">
+        <span class="badge bg-teal px-3 py-2 text-uppercase mb-2">Our Mission &amp; Purpose</span>
+        <h1 class="display-5 fw-bold mb-3">About Smart Civic Management</h1>
+        <p class="fs-5 text-muted max-w-700 mx-auto">
+            "Report Problems. Track Progress. Build Better Communities."
+        </p>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row align-items-center g-5 mb-5">
+        <div class="col-lg-6">
+            <span class="text-teal fw-bold text-uppercase small">Civic Infrastructure &amp; Quality of Life</span>
+            <h2 class="fw-bold mt-1 mb-3">Modernizing Urban Grievance Redressal</h2>
+            <p class="text-muted leading-relaxed">
+                The <strong>Smart Civic Issue Reporting &amp; Resolution Management System</strong> bridges the critical communication gap between residents and municipal authorities. In modern cities, infrastructure defects like broken roads, contaminated water, overflowing dumpsters, and defunct streetlights endanger lives and degrade living standards.
+            </p>
+            <p class="text-muted leading-relaxed">
+                Our platform replaces slow, bureaucratic paper petitions with an instant, photo-verified, geotagged digital system that establishes clear accountability, enforces resolution timelines, and ensures citizens can track their problems until they are resolved.
+            </p>
+            <div class="row g-3 mt-2">
+                <div class="col-sm-6">
+                    <div class="p-3 border rounded bg-body-tertiary">
+                        <i class="bi bi-clock-history text-teal fs-3 mb-2 d-block"></i>
+                        <h6 class="fw-bold mb-1">Time-Bound SLAs</h6>
+                        <small class="text-muted">Strict turnaround protocols by municipal department heads.</small>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="p-3 border rounded bg-body-tertiary">
+                        <i class="bi bi-camera-fill text-teal fs-3 mb-2 d-block"></i>
+                        <h6 class="fw-bold mb-1">Photographic Proof</h6>
+                        <small class="text-muted">Visual documentation prevents misreporting and confirms repairs.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="civic-card p-4 bg-navy text-white shadow-lg">
+                <h4 class="fw-bold text-white mb-4 border-bottom border-secondary pb-3">Core Governance Pillars</h4>
+                <div class="d-flex align-items-start gap-3 mb-4">
+                    <div class="rounded-circle bg-teal text-white p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; flex-shrink: 0;">
+                        <i class="bi bi-eye-fill fs-5"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold text-white mb-1">100% Transparency</h6>
+                        <p class="text-white-50 small mb-0">Every status change is timestamped in an unalterable audit log accessible to the reporting citizen.</p>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-start gap-3 mb-4">
+                    <div class="rounded-circle bg-teal text-white p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; flex-shrink: 0;">
+                        <i class="bi bi-layers-fill fs-5"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold text-white mb-1">Intelligent Duplicate Detection</h6>
+                        <p class="text-white-50 small mb-0">Algorithms detect duplicate reports in the same neighborhood, consolidating public effort and preventing resource waste.</p>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-start gap-3">
+                    <div class="rounded-circle bg-teal text-white p-2 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; flex-shrink: 0;">
+                        <i class="bi bi-star-fill fs-5 text-warning"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold text-white mb-1">Citizen Feedback Loop</h6>
+                        <p class="text-white-50 small mb-0">Complaints are closed with direct community ratings, creating real performance incentives for municipal engineers.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

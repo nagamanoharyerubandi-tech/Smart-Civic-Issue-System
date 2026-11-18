@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Sign In - Smart Civic System{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="civic-card p-4 p-md-5 shadow-lg border-top border-4 border-teal">
+                <div class="text-center mb-4">
+                    <div class="rounded-circle bg-teal text-white d-inline-flex align-items-center justify-content-center p-3 mb-2" style="width: 56px; height: 56px;">
+                        <i class="bi bi-shield-lock-fill fs-3"></i>
+                    </div>
+                    <h3 class="fw-bold mb-1">Portal Sign In</h3>
+                    <p class="text-muted small">Access your Citizen or Administrator dashboard</p>
+                </div>
+
+                <!-- Quick Demonstration Credentials Pill Box -->
+                <div class="p-3 bg-body-tertiary rounded mb-4 small border">
+                    <div class="fw-bold text-teal mb-2 d-flex align-items-center gap-1">
+                        <i class="bi bi-info-circle-fill"></i> Demonstration Login Credentials:
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span><strong>Admin:</strong> <code>admin</code></span>
+                        <span>Pass: <code>adminpassword123</code></span>
+                        <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-2" onclick="fillCreds('admin', 'adminpassword123')">Use</button>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span><strong>Citizen:</strong> <code>citizen_rahul</code></span>
+                        <span>Pass: <code>citizen123</code></span>
+                        <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-2" onclick="fillCreds('citizen_rahul', 'citizen123')">Use</button>
+                    </div>
+                </div>
+
+                <form method="post" action="{% url 'login' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold small">Username or Email</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-body-tertiary"><i class="bi bi-person"></i></span>
+                            {{ form.username }}
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <label class="form-label fw-semibold small mb-0">Password</label>
+                        </div>
+                        <div class="input-group">
+                            <span class="input-group-text bg-body-tertiary"><i class="bi bi-key"></i></span>
+                            {{ form.password }}
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-teal w-100 py-2 fw-bold rounded-pill shadow-sm">
+                        <i class="bi bi-box-arrow-in-right me-1"></i> Sign In to Portal
+                    </button>
+                </form>
+
+                <div class="text-center mt-4 pt-3 border-top small text-muted">
+                    Don't have a citizen account yet?
+                    <a href="{% url 'register' %}" class="text-teal fw-bold text-decoration-none ms-1">Register Now</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function fillCreds(u, p) {
+    document.getElementById('id_username').value = u;
+    document.getElementById('id_password').value = p;
+}
+</script>
+{% endblock %}

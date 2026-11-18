@@ -1,0 +1,46 @@
+{% extends 'citizen/base_citizen.html' %}
+{% load static %}
+
+{% block title %}Cancel Complaint - Smart Civic System{% endblock %}
+{% block page_title %}Cancel Complaint{% endblock %}
+{% block page_subtitle %}Confirm cancellation of your submitted report{% endblock %}
+
+{% block citizen_content %}
+<div class="row justify-content-center">
+    <div class="col-md-7 col-lg-6">
+        <div class="civic-card p-4 p-md-5 text-center shadow border-top border-4 border-danger">
+            <div class="rounded-circle bg-danger bg-opacity-10 text-danger d-inline-flex align-items-center justify-content-center p-3 mb-3" style="width: 64px; height: 64px;">
+                <i class="bi bi-exclamation-triangle-fill fs-2"></i>
+            </div>
+            <h4 class="fw-bold mb-2">Cancel This Complaint?</h4>
+            <p class="text-muted small mb-4">
+                Are you sure you want to cancel complaint <strong>{{ complaint.reference_id }}</strong>?
+                This action cannot be undone once confirmed.
+            </p>
+
+            <div class="p-3 bg-body-tertiary rounded text-start small mb-4">
+                <div><strong>Title:</strong> {{ complaint.title }}</div>
+                <div><strong>Category:</strong> {{ complaint.category.name }}</div>
+                <div><strong>Area:</strong> {{ complaint.area }}</div>
+            </div>
+
+            <form method="post" action="{% url 'citizen_complaint_cancel' complaint.id %}">
+                {% csrf_token %}
+                <div class="mb-4 text-start">
+                    <label class="form-label fw-semibold small">Reason for Cancellation</label>
+                    <textarea name="reason" class="form-control" rows="3" placeholder="E.g., Problem was already fixed by neighbor, entered incorrect location, etc." required></textarea>
+                </div>
+
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="{% url 'citizen_complaint_detail' complaint.id %}" class="btn btn-outline-secondary rounded-pill px-4">
+                        Keep Complaint
+                    </a>
+                    <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold">
+                        <i class="bi bi-x-circle me-1"></i> Yes, Cancel It
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

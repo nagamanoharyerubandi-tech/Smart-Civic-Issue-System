@@ -1,0 +1,120 @@
+{% extends 'admin_portal/base_admin.html' %}
+{% load static %}
+
+{% block title %}Complaint Analytics - Smart Civic System{% endblock %}
+{% block page_title %}Operational Complaint Analytics{% endblock %}
+{% block page_subtitle %}Deep-dive resolution rates, department workloads, and service level performance{% endblock %}
+
+{% block admin_content %}
+<!-- Overview KPI Row -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="civic-card p-4 text-center">
+            <h6 class="text-muted text-uppercase small fw-bold">Overall Resolution Rate</h6>
+            <div class="display-4 fw-extrabold text-success">{{ overall_res_rate }}%</div>
+            <small class="text-muted">{{ resolved_complaints }} out of {{ total_complaints }} complaints resolved</small>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="civic-card p-4 text-center">
+            <h6 class="text-muted text-uppercase small fw-bold">Average Turnaround</h6>
+            <div class="display-4 fw-extrabold text-teal">42 <small class="fs-4">Hours</small></div>
+            <small class="text-muted">Target turnaround SLA is 72 hours</small>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="civic-card p-4 text-center">
+            <h6 class="text-muted text-uppercase small fw-bold">Active Departments</h6>
+            <div class="display-4 fw-extrabold text-primary">{{ departments.count }}</div>
+            <small class="text-muted">Dispatch wings operating across all city wards</small>
+        </div>
+    </div>
+</div>
+
+<!-- Department Performance Table -->
+<div class="civic-card mb-4">
+    <div class="civic-card-header">
+        <h6 class="fw-bold mb-0"><i class="bi bi-building text-primary me-2"></i>Department Resolution Metrics</h6>
+    </div>
+    <div class="table-responsive">
+        <table class="table civic-table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Department</th>
+                    <th>Code</th>
+                    <th>Head Officer</th>
+                    <th>Assigned Issues</th>
+                    <th>Resolved Issues</th>
+                    <th>Pending Backlog</th>
+                    <th>Performance Progress</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for dept in departments %}
+                    <tr>
+                        <td class="fw-bold">{{ dept.name }}</td>
+                        <td><span class="badge bg-primary-subtle text-primary">{{ dept.code }}</span></td>
+                        <td><small>{{ dept.head_officer_name|default:"Not Assigned" }}</small></td>
+                        <td><strong>{{ dept.total_assigned }}</strong></td>
+                        <td><span class="text-success fw-bold">{{ dept.resolved_count }}</span></td>
+                        <td><span class="text-warning fw-bold">{{ dept.pending_count }}</span></td>
+                        <td style="min-width: 150px;">
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: {% if dept.total_assigned > 0 %}{% widthratio dept.resolved_count dept.total_assigned 100 %}{% else %}0{% endif %}%;"></div>
+                            </div>
+                            <small class="text-muted" style="font-size: 0.72rem;">
+                                {% if dept.total_assigned > 0 %}{% widthratio dept.resolved_count dept.total_assigned 100 %}% Resolved{% else %}No workload{% endif %}
+                            </small>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">No department statistics available.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Category Breakdown Table -->
+<div class="civic-card">
+    <div class="civic-card-header">
+        <h6 class="fw-bold mb-0"><i class="bi bi-tags-fill text-teal me-2"></i>Issue Category Volumes &amp; Turnaround</h6>
+    </div>
+    <div class="table-responsive">
+        <table class="table civic-table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>Color Code</th>
+                    <th>Total Reported</th>
+                    <th>Resolved</th>
+                    <th>Resolution Share</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cat in categories %}
+                    <tr>
+                        <td class="fw-bold">
+                            <i class="bi {{ cat.icon }} me-2" style="color: {{ cat.color }};"></i>
+                            {{ cat.name }}
+                        </td>
+                        <td><span class="badge px-2 py-1 text-white" style="background-color: {{ cat.color }};">{{ cat.color }}</span></td>
+                        <td><strong>{{ cat.total_count }}</strong></td>
+                        <td><span class="text-success fw-bold">{{ cat.resolved_count }}</span></td>
+                        <td style="min-width: 150px;">
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-teal" role="progressbar" style="width: {% if cat.total_count > 0 %}{% widthratio cat.resolved_count cat.total_count 100 %}{% else %}0{% endif %}%;"></div>
+                            </div>
+                            <small class="text-muted" style="font-size: 0.72rem;">
+                                {% if cat.total_count > 0 %}{% widthratio cat.resolved_count cat.total_count 100 %}% Resolved{% else %}0%{% endif %}
+                            </small>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

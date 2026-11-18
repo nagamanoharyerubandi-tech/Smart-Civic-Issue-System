@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}How It Works - Smart Civic Issue Reporting & Resolution System{% endblock %}
+
+{% block content %}
+<div class="py-5 bg-body-tertiary border-bottom">
+    <div class="container text-center">
+        <span class="badge bg-teal px-3 py-2 text-uppercase mb-2">Step-by-Step Guide</span>
+        <h1 class="display-5 fw-bold mb-3">How The System Works</h1>
+        <p class="fs-5 text-muted max-w-700 mx-auto">
+            From discovering a pothole to verifying its repair — here is how your complaint moves through our municipal resolution pipeline.
+        </p>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="civic-card p-4 h-100">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <span class="badge bg-primary fs-5 px-3 py-2 rounded-circle">1</span>
+                    <h4 class="fw-bold mb-0">Citizen Reports Issue</h4>
+                </div>
+                <p class="text-muted">
+                    Take a photo using your smartphone or upload an image file. Choose the relevant category (e.g. Road Damage, Water Leakage, Garbage Accumulation) and provide your ward/area details. You can even use your phone's GPS for exact pinpointing.
+                </p>
+                <div class="p-3 bg-body-tertiary rounded small">
+                    <strong>Output:</strong> System generates a unique complaint reference code (e.g. <code>CIV-202611-AB12</code>) and sends an instant acknowledgment email & in-app alert.
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="civic-card p-4 h-100">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <span class="badge bg-info fs-5 px-3 py-2 rounded-circle text-dark">2</span>
+                    <h4 class="fw-bold mb-0">Triage &amp; Duplicate Check</h4>
+                </div>
+                <p class="text-muted">
+                    The central municipal control room reviews the incoming complaint. Our built-in duplicate detection engine scans active complaints in the same ward to ensure duplicate reports are identified and linked.
+                </p>
+                <div class="p-3 bg-body-tertiary rounded small">
+                    <strong>Action:</strong> Priority is classified (Low, Medium, or High) based on safety hazard severity.
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="civic-card p-4 h-100">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <span class="badge bg-warning fs-5 px-3 py-2 rounded-circle text-dark">3</span>
+                    <h4 class="fw-bold mb-0">Department Assignment &amp; Field Dispatch</h4>
+                </div>
+                <p class="text-muted">
+                    The complaint is formally assigned to the responsible engineering department (such as PWD, Solid Waste Management, or Water Supply Board). Specific dispatch instructions and target completion dates are set.
+                </p>
+                <div class="p-3 bg-body-tertiary rounded small">
+                    <strong>Status:</strong> Complaint transitions to <em>Assigned</em> and then <em>In Progress</em> as maintenance teams deploy on-site.
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="civic-card p-4 h-100">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <span class="badge bg-success fs-5 px-3 py-2 rounded-circle">4</span>
+                    <h4 class="fw-bold mb-0">Resolution &amp; Citizen Feedback</h4>
+                </div>
+                <p class="text-muted">
+                    Once field work is concluded, engineers log the resolution notes into the system. The complaint is marked <em>Resolved</em>, and the citizen receives a notification prompting them to rate the quality of service (1 to 5 stars).
+                </p>
+                <div class="p-3 bg-body-tertiary rounded small">
+                    <strong>Accountability:</strong> Average ratings are displayed on public and admin dashboards to measure civic performance.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center mt-5">
+        <a href="{% url 'citizen_complaint_create' %}" class="btn btn-teal btn-lg rounded-pill px-5 shadow">
+            Ready to Report an Issue? Get Started &rarr;
+        </a>
+    </div>
+</div>
+{% endblock %}

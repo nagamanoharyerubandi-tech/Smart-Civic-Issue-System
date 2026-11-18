@@ -1,0 +1,102 @@
+{% extends 'citizen/base_citizen.html' %}
+{% load static %}
+
+{% block title %}Track {{ complaint.reference_id }} - Smart Civic System{% endblock %}
+{% block page_title %}Live Progress Tracker{% endblock %}
+{% block page_subtitle %}Complaint Ref: {{ complaint.reference_id }}{% endblock %}
+
+{% block citizen_content %}
+<div class="civic-card p-4 p-md-5 mb-4 shadow">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 border-bottom pb-4 mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <span class="badge bg-navy px-3 py-1 fs-6">{{ complaint.reference_id }}</span>
+                <span class="badge {{ complaint.status_badge_class }} fs-6 px-3 py-1">{{ complaint.status }}</span>
+                <span class="badge {{ complaint.priority_badge_class }} fs-6 px-3 py-1">{{ complaint.priority }} Priority</span>
+            </div>
+            <h3 class="fw-bold mb-1">{{ complaint.title }}</h3>
+            <div class="text-muted small">
+                <i class="bi bi-geo-alt me-1 text-danger"></i> {{ complaint.area }}, {{ complaint.city }}
+                <span class="mx-2">•</span>
+                <i class="bi bi-calendar-event me-1"></i> Lodged {{ complaint.created_at|date:"M d, Y" }}
+            </div>
+        </div>
+
+        <div class="text-md-end">
+            <a href="{% url 'citizen_complaint_detail' complaint.id %}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> Back to Complaint
+            </a>
+        </div>
+    </div>
+
+    <!-- Stepper Timeline -->
+    <div class="my-5">
+        <h6 class="text-uppercase fw-bold text-muted small mb-4">Real-Time Progression Milestone</h6>
+        <div class="tracking-stepper">
+            <div class="tracking-stepper-progress" style="width: {{ complaint.progress_percentage }}%;"></div>
+
+            <!-- 1. Submitted -->
+            <div class="step-item {% if complaint.status != 'Rejected' %}completed{% else %}rejected{% endif %}">
+                <div class="step-circle"><i class="bi bi-check-lg"></i></div>
+                <div class="step-label">Submitted</div>
+                <div class="step-date">{{ complaint.created_at|date:"M d" }}</div>
+            </div>
+
+            <!-- 2. Under Review -->
+            <div class="step-item {% if complaint.status in 'Under Review,Assigned,In Progress,Resolved' %}completed{% elif complaint.status == 'Submitted' %}active{% endif %}">
+                <div class="step-circle"><i class="bi bi-search"></i></div>
+                <div class="step-label">Under Review</div>
+            </div>
+
+            <!-- 3. Assigned -->
+            <div class="step-item {% if complaint.status in 'Assigned,In Progress,Resolved' %}completed{% elif complaint.status == 'Under Review' %}active{% endif %}">
+                <div class="step-circle"><i class="bi bi-building-gear"></i></div>
+                <div class="step-label">Assigned</div>
+                {% if complaint.assigned_department %}
+                    <div class="step-date text-primary fw-bold">{{ complaint.assigned_department.code }}</div>
+                {% endif %}
+            </div>
+
+            <!-- 4. In Progress -->
+            <div class="step-item {% if complaint.status in 'In Progress,Resolved' %}completed{% elif complaint.status == 'Assigned' %}active{% endif %}">
+                <div class="step-circle"><i class="bi bi-tools"></i></div>
+                <div class="step-label">In Progress</div>
+            </div>
+
+            <!-- 5. Resolved -->
+            <div class="step-item {% if complaint.status == 'Resolved' %}completed{% elif complaint.status == 'Rejected' %}rejected{% endif %}">
+                <div class="step-circle">
+                    {% if complaint.status == 'Rejected' %}
+                        <i class="bi bi-x-lg"></i>
+                    {% else %}
+                        <i class="bi bi-flag-fill"></i>
+                    {% endif %}
+                </div>
+                <div class="step-label">
+                    {% if complaint.status == 'Rejected' %}Rejected{% else %}Resolved{% endif %}
+                </div>
+                {% if complaint.resolved_at %}
+                    <div class="step-date text-success fw-bold">{{ complaint.resolved_at|date:"M d" }}</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Audit Event Log -->
+    <h5 class="fw-bold mb-3 border-bottom pb-2">Status History &amp; Field Dispatch Notes</h5>
+    <div class="vertical-timeline">
+        {% for hist in status_history %}
+            <div class="timeline-event">
+                <div class="timeline-dot {% if hist.status == 'Resolved' %}success{% elif hist.status == 'Rejected' %}danger{% else %}active{% endif %}"></div>
+                <div class="timeline-content">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="badge bg-secondary-subtle text-dark fw-bold">{{ hist.status }}</span>
+                        <small class="text-muted">{{ hist.changed_at|date:"M d, Y h:i A" }}</small>
+                    </div>
+                    <p class="mb-0 small text-muted">{{ hist.remarks|default:"Audit status recorded." }}</p>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

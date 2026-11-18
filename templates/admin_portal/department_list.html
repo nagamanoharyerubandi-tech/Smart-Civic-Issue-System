@@ -1,0 +1,71 @@
+{% extends 'admin_portal/base_admin.html' %}
+{% load static %}
+
+{% block title %}Manage Departments - Smart Civic System{% endblock %}
+{% block page_title %}Municipal Engineering Departments{% endblock %}
+{% block page_subtitle %}Directory of departments responsible for physical field repairs and grievance dispatch{% endblock %}
+
+{% block admin_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="text-muted small">Configured Departments: <strong>{{ departments.count }}</strong></div>
+    <a href="{% url 'admin_department_create' %}" class="btn btn-teal btn-sm rounded-pill px-4 fw-semibold">
+        <i class="bi bi-plus-lg me-1"></i> Add New Department
+    </a>
+</div>
+
+<div class="civic-card">
+    <div class="table-responsive">
+        <table class="table civic-table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Department Name</th>
+                    <th>Code</th>
+                    <th>Head Officer</th>
+                    <th>Contact Details</th>
+                    <th>Workload (Assigned)</th>
+                    <th>Resolved</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for dept in departments %}
+                    <tr>
+                        <td class="fw-bold">
+                            <i class="bi bi-building text-primary me-2"></i>
+                            {{ dept.name }}
+                        </td>
+                        <td><span class="badge bg-primary-subtle text-primary fw-bold">{{ dept.code }}</span></td>
+                        <td><small class="fw-semibold">{{ dept.head_officer_name|default:"Not Designated" }}</small></td>
+                        <td>
+                            <small class="text-muted d-block">{{ dept.phone|default:"No phone" }}</small>
+                            <small class="text-muted">{{ dept.email|default:"No email" }}</small>
+                        </td>
+                        <td><span class="badge bg-secondary-subtle text-secondary">{{ dept.total_assigned }} complaints</span></td>
+                        <td><span class="badge bg-success-subtle text-success">{{ dept.resolved_count }} resolved</span></td>
+                        <td>
+                            {% if dept.is_active %}
+                                <span class="badge bg-success">Active</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            <a href="{% url 'admin_department_edit' dept.id %}" class="btn btn-xs btn-outline-secondary btn-sm py-1 px-2" title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="{% url 'admin_department_delete' dept.id %}" class="btn btn-xs btn-outline-danger btn-sm py-1 px-2" title="Delete">
+                                <i class="bi bi-trash3"></i>
+                            </a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center py-4 text-muted">No departments configured yet.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

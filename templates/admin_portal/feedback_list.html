@@ -1,0 +1,124 @@
+{% extends 'admin_portal/base_admin.html' %}
+{% load static %}
+
+{% block title %}Feedback Management - Smart Civic System{% endblock %}
+{% block page_title %}Citizen Feedback &amp; Ratings{% endblock %}
+{% block page_subtitle %}Review community satisfaction scores and citizen testimonials on resolved issues{% endblock %}
+
+{% block admin_content %}
+<!-- Overview Scorecard Row -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="civic-card p-4 text-center">
+            <h6 class="text-muted text-uppercase small fw-bold">Citizen Satisfaction Index</h6>
+            <div class="display-4 fw-extrabold text-warning">
+                {{ avg_rating }} <small class="fs-4">★</small>
+            </div>
+            <small class="text-muted">Based on {{ total_feedbacks }} verified citizen reviews</small>
+        </div>
+    </div>
+
+    <!-- Rating Distribution Pills -->
+    <div class="col-md-8">
+        <div class="civic-card p-4">
+            <h6 class="text-muted text-uppercase small fw-bold mb-3">Rating Breakdown</h6>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{% url 'admin_feedback_list' %}" class="btn btn-sm {% if not rating_filter %}btn-teal{% else %}btn-outline-secondary{% endif %} rounded-pill">
+                    All Ratings ({{ total_feedbacks }})
+                </a>
+                <a href="{% url 'admin_feedback_list' %}?rating=5" class="btn btn-sm {% if rating_filter == '5' %}btn-warning text-dark{% else %}btn-outline-secondary{% endif %} rounded-pill">
+                    5 Stars ({{ rating_counts.5|default:0 }})
+                </a>
+                <a href="{% url 'admin_feedback_list' %}?rating=4" class="btn btn-sm {% if rating_filter == '4' %}btn-warning text-dark{% else %}btn-outline-secondary{% endif %} rounded-pill">
+                    4 Stars ({{ rating_counts.4|default:0 }})
+                </a>
+                <a href="{% url 'admin_feedback_list' %}?rating=3" class="btn btn-sm {% if rating_filter == '3' %}btn-warning text-dark{% else %}btn-outline-secondary{% endif %} rounded-pill">
+                    3 Stars ({{ rating_counts.3|default:0 }})
+                </a>
+                <a href="{% url 'admin_feedback_list' %}?rating=2" class="btn btn-sm {% if rating_filter == '2' %}btn-warning text-dark{% else %}btn-outline-secondary{% endif %} rounded-pill">
+                    2 Stars ({{ rating_counts.2|default:0 }})
+                </a>
+                <a href="{% url 'admin_feedback_list' %}?rating=1" class="btn btn-sm {% if rating_filter == '1' %}btn-warning text-dark{% else %}btn-outline-secondary{% endif %} rounded-pill">
+                    1 Star ({{ rating_counts.1|default:0 }})
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reviews Table / Cards -->
+<div class="civic-card">
+    <div class="table-responsive">
+        <table class="table civic-table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Ref ID</th>
+                    <th>Citizen</th>
+                    <th>Rating</th>
+                    <th>Citizen Comments</th>
+                    <th>Department</th>
+                    <th>Date</th>
+                    <th class="text-end">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for fb in page_obj %}
+                    <tr>
+                        <td class="fw-bold">
+                            <a href="{% url 'admin_complaint_detail' fb.complaint.id %}" class="text-teal text-decoration-none">
+                                {{ fb.complaint.reference_id }}
+                            </a>
+                        </td>
+                        <td>
+                            <div class="fw-semibold small">{{ fb.citizen.get_full_name|default:fb.citizen.username }}</div>
+                            <small class="text-muted">{{ fb.citizen.profile.phone_number|default:fb.citizen.email }}</small>
+                        </td>
+                        <td>
+                            <div class="rating-stars text-nowrap">
+                                {% for _ in fb.stars_range %}★{% endfor %}{% for _ in fb.empty_stars_range %}☆{% endfor %}
+                            </div>
+                            <small class="fw-bold text-dark">{{ fb.rating }} / 5</small>
+                        </td>
+                        <td>
+                            <p class="mb-0 small text-secondary leading-relaxed">"{{ fb.comments }}"</p>
+                        </td>
+                        <td>
+                            <span class="badge bg-primary-subtle text-primary">
+                                {{ fb.complaint.assigned_department.code|default:"Municipal PWD" }}
+                            </span>
+                        </td>
+                        <td><small class="text-muted">{{ fb.created_at|date:"M d, Y" }}</small></td>
+                        <td class="text-end">
+                            <a href="{% url 'admin_complaint_detail' fb.complaint.id %}" class="btn btn-xs btn-outline-primary btn-sm py-1 px-2">
+                                <i class="bi bi-eye"></i> View
+                            </a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-muted">No citizen feedback records match this filter.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+        <div class="p-3 border-top d-flex justify-content-between align-items-center">
+            <small class="text-muted">Showing {{ page_obj.start_index }}-{{ page_obj.end_index }} of {{ page_obj.paginator.count }} reviews</small>
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if rating_filter %}&rating={{ rating_filter }}{% endif %}">&laquo;</a></li>
+                    {% endif %}
+                    <li class="page-item active"><span class="page-link bg-teal border-teal">{{ page_obj.number }}</span></li>
+                    {% if page_obj.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if rating_filter %}&rating={{ rating_filter }}{% endif %}">&raquo;</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

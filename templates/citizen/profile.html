@@ -1,0 +1,68 @@
+{% extends 'citizen/base_citizen.html' %}
+{% load static %}
+
+{% block title %}My Profile - Smart Civic System{% endblock %}
+{% block page_title %}Citizen Profile Settings{% endblock %}
+{% block page_subtitle %}Manage your personal information and contact details{% endblock %}
+
+{% block citizen_content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="civic-card p-4 p-md-5 shadow-sm">
+            <div class="d-flex align-items-center justify-content-between pb-3 mb-4 border-bottom">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-circle bg-teal text-white d-flex align-items-center justify-content-center fs-3 fw-bold" style="width: 58px; height: 58px;">
+                        {{ user.username|slice:":1"|upper }}
+                    </div>
+                    <div>
+                        <h4 class="fw-bold mb-0">{{ user.get_full_name|default:user.username }}</h4>
+                        <div class="text-muted small">Registered Citizen Account • Joined {{ user.date_joined|date:"M Y" }}</div>
+                    </div>
+                </div>
+                <a href="{% url 'change_password' %}" class="btn btn-outline-secondary btn-sm rounded-pill">
+                    <i class="bi bi-key me-1"></i> Change Password
+                </a>
+            </div>
+
+            <form method="post" action="{% url 'profile' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold small">First Name</label>
+                        {{ form.first_name }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold small">Last Name</label>
+                        {{ form.last_name }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold small">Email Address</label>
+                        {{ form.email }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold small">Phone Number</label>
+                        {{ form.phone_number }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold small">City</label>
+                        {{ form.city }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold small">Profile Picture (Optional)</label>
+                        {{ form.profile_picture }}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold small">Residential Address / Ward</label>
+                        {{ form.address }}
+                    </div>
+                    <div class="col-12 mt-4 text-end">
+                        <button type="submit" class="btn btn-teal px-5 rounded-pill fw-bold">
+                            <i class="bi bi-check-lg me-1"></i> Save Profile Changes
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

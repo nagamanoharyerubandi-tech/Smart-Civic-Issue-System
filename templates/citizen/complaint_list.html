@@ -1,0 +1,166 @@
+{% extends 'citizen/base_citizen.html' %}
+{% load static %}
+
+{% block title %}My Submitted Complaints - Smart Civic System{% endblock %}
+{% block page_title %}My Filed Complaints{% endblock %}
+{% block page_subtitle %}Review progress, view history, and submit post-resolution feedback{% endblock %}
+
+{% block citizen_content %}
+<!-- Filter Pills & Search Bar -->
+<div class="civic-card p-3 mb-4">
+    <div class="row align-items-center g-3">
+        <!-- Filter Pills -->
+        <div class="col-lg-8">
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{% url 'citizen_complaint_list' %}" class="btn btn-sm {% if not status_filter %}btn-teal{% else %}btn-outline-secondary{% endif %} rounded-pill">
+                    All ({{ status_counts.all }})
+                </a>
+                <a href="{% url 'citizen_complaint_list' %}?status=Submitted" class="btn btn-sm {% if status_filter == 'Submitted' %}btn-secondary{% else %}btn-outline-secondary{% endif %} rounded-pill">
+                    Submitted ({{ status_counts.Submitted }})
+                </a>
+                <a href="{% url 'citizen_complaint_list' %}?status=In Progress" class="btn btn-sm {% if status_filter == 'In Progress' %}btn-warning text-dark{% else %}btn-outline-secondary{% endif %} rounded-pill">
+                    Active Resolution
+                </a>
+                <a href="{% url 'citizen_complaint_list' %}?status=Resolved" class="btn btn-sm {% if status_filter == 'Resolved' %}btn-success{% else %}btn-outline-secondary{% endif %} rounded-pill">
+                    Resolved ({{ status_counts.Resolved }})
+                </a>
+                <a href="{% url 'citizen_complaint_list' %}?status=Rejected" class="btn btn-sm {% if status_filter == 'Rejected' %}btn-danger{% else %}btn-outline-secondary{% endif %} rounded-pill">
+                    Rejected ({{ status_counts.Rejected }})
+                </a>
+            </div>
+        </div>
+
+        <!-- Search Form -->
+        <div class="col-lg-4">
+            <form action="{% url 'citizen_complaint_list' %}" method="get" class="d-flex gap-2">
+                {% if status_filter %}
+                    <input type="hidden" name="status" value="{{ status_filter }}">
+                {% endif %}
+                <div class="input-group">
+                    <span class="input-group-text bg-body-tertiary border-end-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" name="q" value="{{ search_query }}" class="form-control border-start-0" placeholder="Search ID, title, area...">
+                    <button class="btn btn-outline-secondary" type="submit">Filter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Complaints Data Table -->
+<div class="civic-card">
+    <div class="table-responsive">
+        <table class="table civic-table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Ref ID</th>
+                    <th>Issue Title</th>
+                    <th>Category</th>
+                    <th>Area / Ward</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                    <th>Date Filed</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for comp in page_obj %}
+                    <tr>
+                        <td class="fw-bold">
+                            <a href="{% url 'citizen_complaint_detail' comp.id %}" class="text-teal text-decoration-none">
+                                {{ comp.reference_id }}
+                            </a>
+                        </td>
+                        <td>
+                            <div class="fw-semibold text-truncate" style="max-width: 250px;">
+                                <a href="{% url 'citizen_complaint_detail' comp.id %}" class="text-reset text-decoration-none">
+                                    {{ comp.title }}
+                                </a>
+                            </div>
+                            {% if comp.photograph %}
+                                <small class="text-muted"><i class="bi bi-image text-primary me-1"></i> Photo Attached</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge bg-body-tertiary text-dark border">
+                                <i class="bi {{ comp.category.icon }} me-1" style="color: {{ comp.category.color }};"></i>
+                                {{ comp.category.name }}
+                            </span>
+                        </td>
+                        <td><small class="text-muted">{{ comp.area }}</small></td>
+                        <td>
+                            <span class="badge {{ comp.priority_badge_class }}">{{ comp.priority }}</span>
+                        </td>
+                        <td>
+                            <span class="badge {{ comp.status_badge_class }}">{{ comp.status }}</span>
+                        </td>
+                        <td><small class="text-muted">{{ comp.created_at|date:"M d, Y" }}</small></td>
+                        <td class="text-end">
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'citizen_complaint_detail' comp.id %}" class="btn btn-outline-secondary" title="View Full Details">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{% url 'citizen_complaint_track' comp.id %}" class="btn btn-outline-primary" title="Live Timeline">
+                                    <i class="bi bi-crosshair"></i>
+                                </a>
+                                {% if comp.is_cancellable %}
+                                    <a href="{% url 'citizen_complaint_cancel' comp.id %}" class="btn btn-outline-danger" title="Cancel Complaint">
+                                        <i class="bi bi-x-circle"></i>
+                                    </a>
+                                {% endif %}
+                                {% if comp.status == 'Resolved' %}
+                                    <a href="{% url 'citizen_submit_feedback' comp.id %}" class="btn btn-outline-warning" title="Submit Rating">
+                                        <i class="bi bi-star-fill"></i>
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center py-5 text-muted">
+                            <i class="bi bi-inbox fs-1 d-block mb-2 text-secondary"></i>
+                            <h6 class="fw-bold">No complaints found.</h6>
+                            <p class="small mb-3">No complaints match your current filter criteria.</p>
+                            <a href="{% url 'citizen_complaint_create' %}" class="btn btn-teal btn-sm rounded-pill px-4">
+                                <i class="bi bi-plus-lg me-1"></i> Report an Issue
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+        <div class="p-3 border-top d-flex justify-content-between align-items-center">
+            <small class="text-muted">
+                Showing {{ page_obj.start_index }}-{{ page_obj.end_index }} of {{ page_obj.paginator.count }} complaints
+            </small>
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}">&laquo;</a>
+                        </li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active"><span class="page-link bg-teal border-teal">{{ num }}</span></li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item"><a class="page-link" href="?page={{ num }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}">{{ num }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}">&raquo;</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
